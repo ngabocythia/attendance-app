@@ -1,9 +1,12 @@
+
 const express = require("express");
 const Sqlite = require("sqlite3");
 const cors = require("cors");
+const Path = require("path");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 10000;
+app.use(express.static(__dirname));
 app.use(express.json());
 app.use(cors());
 
@@ -25,6 +28,11 @@ db.run(`
 
 
 app.get("/", (req, res) => {
+  res.sendFile(Path.join(__dirname, "index.html"));
+ 
+});
+
+app.get("/api/attendance", (req, res) => {
   db.all(`SELECT * FROM attendanceList ORDER BY created_at DESC`, (err, rows) => {
     if (err) {
       console.log(err);
@@ -66,16 +74,16 @@ app.get("/student/:id", (req, res) => {
 });
 
 app.post("/api/save", (req, res) => {
-  const { userName, userLocation, userAge } = req.body;
+  const { userName, userLocation, userAge,userGrade } = req.body;
   //   console.log("this is the username;", { userName, userEmail, userPassword });
 
-  if (!userName | !userLocation | !userAge) {
+  if (!userName | !userLocation | !userAge | !userGrade) {
     return console.log("all field is required");
   }
 
-  const query = `INSERT INTO attendanceList (userName,location,age) VALUES (?,?,?)`;
+  const query = `INSERT INTO attendanceList (userName,location,age,grade) VALUES (?,?,?,?)`;
 
-  db.run(query, [userName, userLocation, userAge], (err) => {
+  db.run(query, [userName, userLocation, userAge, userGrade], (err) => {
     if (err) {
       return console.log("there is an error saving data", err);
     }
@@ -84,16 +92,16 @@ app.post("/api/save", (req, res) => {
 });
 app.post("/api/save-grade", (req, res) => {
 
-  const {id, subjectSelected, TypeSelected, point,maxPoint } = req.body;
-    console.log("this is the subject;", { subjectSelected, TypeSelected, point,maxPoint });
+  const {id, subjectSelected, TypeSelected, point,maxPoint,total } = req.body;
+    console.log("this is the subject;", { subjectSelected, TypeSelected, point,maxPoint,total });
 
-  if (!id |!subjectSelected | !TypeSelected | !point | !maxPoint) {
+  if (!id |!subjectSelected | !TypeSelected | !point | !maxPoint | !total) {
     return console.log("all field is required");
   }
 
   const query = `INSERT INTO studentGrade (id,subjectSelected, TypeSelected, point,maxPoint) VALUES (?,?,?,?,?)`;
 
-  db.run(query, [id, subjectSelected, TypeSelected, point,maxPoint], (err) => {
+  db.run(query, [id, subjectSelected, TypeSelected, point,maxPoint,total], (err) => {
     if (err) {
       return console.log("there is an error saving data", err);
     }
@@ -107,6 +115,7 @@ app.delete(`/api/delete/:id`,(req,res)=>{
   if(!studentId){
     console.log('missing id');
     return
+  
     
   }
   db.run(
@@ -115,6 +124,7 @@ app.delete(`/api/delete/:id`,(req,res)=>{
       return
       
     }
+  
   )
   db.run(
     `DELETE FROM studentGrade WHERE id = ?`,[studentId],(err)=>{
@@ -127,14 +137,14 @@ app.delete(`/api/delete/:id`,(req,res)=>{
 })
 app.put(`/api/update/:id`,(req,res)=>{
   const studentId = req.params.id
-  const { userName, userLocation, userAge } = req.body;
+  const { userName, userLocation, userAge, userGrade} = req.body;
   if(!studentId){
     console.log('missing id');
     return
     
   }
   db.run(
-    `UPDATE attendanceList SET userName = ?,location = ?,age= ? WHERE id = ?`,[userName,userLocation,userAge,studentId],(err)=>{
+    `UPDATE attendanceList SET userName = ?,location = ?,age= ?,grade = ? WHERE id = ?`,[userName,userLocation,userAge,userGrade,studentId],(err)=>{
       console.log('ERROR',err);
       return
       

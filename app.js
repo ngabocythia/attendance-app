@@ -4,6 +4,7 @@ const searchBox = document.getElementById("search-Box");
 const userNameInput = document.getElementById("userNameId");
 const locationInput = document.getElementById("locationId");
 const ageInput = document.getElementById("ageId");
+const gradeInput = document.getElementById("gradeId");
 const submitForm = document.getElementById("submitForm");
 const studentModel = document.getElementById("studentModel");
 const closeModel = document.getElementById("closeModel");
@@ -19,21 +20,27 @@ const editStudent = document.getElementById("editStudent");
 let userName = "";
 let userLocation = "";
 let userAge = "";
+let userGrade = "";
 let clickedStudentId;
+const API_URL = 'https://attendance-app-8jhv.onrender.com'
 
-if (userNameInput && locationInput && ageInput) {
+if (userNameInput && locationInput && ageInput && gradeInput) {
   userNameInput.addEventListener("keyup", (event) => {
     userName = event.target.value;
   });
 
   locationInput.addEventListener("keyup", (event) => {
     userLocation = event.target.value;
-  });
+  })
 
   ageInput.addEventListener("keyup", (event) => {
     userAge = event.target.value;
   });
 
+gradeInput.addEventListener("keyup", (event)=> {
+    userGrade = event.target.value;
+  });
+ 
   submitForm.addEventListener("submit", (e) => {
     e.preventDefault();
     saveUserData();
@@ -50,16 +57,16 @@ if (addGrade) {
 }
 
 function saveUserData() {
-  if ((userName == "") | (userLocation == "") | (userAge == "")) {
+  if ((userName == "") | (userLocation == "") | (userAge == "") | (userGrade == "")) {
     return console.log("you must provide all field");
   }
 
-  fetch("http://localhost:3000/api/save", {
+  fetch(`${API_URL}/api/save`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ userName, userLocation, userAge }),
+    body: JSON.stringify({ userName, userLocation, userAge, userGrade }),
   }).then((res) => {
     console.log(res, "this is the response");
   });
@@ -68,7 +75,7 @@ function saveUserData() {
 getAllData();
 
 function getAllData() {
-  fetch("http://localhost:3000/", {
+  fetch(`${API_URL}/api/attendance`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -90,17 +97,21 @@ function getAllData() {
         locationTdata.className = "user_list";
         const ageTdata = document.createElement("td");
         ageTdata.className = "user_list";
+        const gradeTdata = document.createElement("td");
+        gradeTdata.className = "user_list";
 
         idTdata.innerText = `${idx + 1}`;
         userNameTdata.innerHTML = `${item.username}`;
         userNameTdata.id = "user_Tdata";
         locationTdata.innerText = `${item.location}`;
         ageTdata.innerText = `${item.age}`;
+        gradeTdata.innerText = `${item.grade}`;
 
         list.appendChild(idTdata);
         list.appendChild(userNameTdata);
         list.appendChild(locationTdata);
         list.appendChild(ageTdata);
+        list.appendChild(gradeTdata);
         if (table_list) {
           table_list.appendChild(list);
         }
@@ -110,7 +121,7 @@ function getAllData() {
 }
 
 const studentData = () => {
-  fetch(`http://localhost:3000/student/${clickedStudentId}`, {
+  fetch(`${API_URL}/student/${clickedStudentId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -130,20 +141,25 @@ const studentData = () => {
 
       studentAge = document.createElement("p");
       studentAge.innerText = `Age: ${data[0].age}`;
+      
+      studentGrade = document.createElement("p");
+      studentGrade.innerText = `Grade: ${data[0].grade}`;
 
       studentId = document.createElement("p");
       studentId.innerText = `student Id: 0${data[0].id}`;
+    
 
       studentIntro.appendChild(studentName);
       studentIntro.appendChild(studentLocation);
       studentIntro.appendChild(studentAge);
+      studentIntro.appendChild(studentGrade);
       studentIntro.appendChild(studentId);
     });
   });
 };
 
 const getshowGrade = ()=> {
-  fetch(`http://localhost:3000/grade/${clickedStudentId}`, {
+  fetch(`${API_URL}/grade/${clickedStudentId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -151,7 +167,7 @@ const getshowGrade = ()=> {
   }).then((res) => {
     res.json().then((data) => {
       if (data.length == 0) {
-        gradeTable.classList = `hideTable`
+       /* gradeTable.classList = `hideTable`*/
         noGradeTitle.style = `display:block`
       }
       console.log("this is data ", data);
@@ -163,7 +179,7 @@ const getshowGrade = ()=> {
 }
 
 function deleteIndividualStudent(clickedStudentId) {
-  fetch(`http://localhost:3000/api/delete/${clickedStudentId}`,{
+  fetch(`${API_URL}/api/delete/${clickedStudentId}`,{
     method:'DELETE',
     headers: {
       "Content-Type": "application/json",
@@ -219,17 +235,21 @@ function showTableData(subjectSelected,TypeSelected,point,maxPoint) {
   locationTdata.className = "user_list";
   const ageTdata = document.createElement("td");
   ageTdata.className = "user_list";
+  const gradeTdata = document.createElement("td");
+  gradeTdata.className = "user_list";
 
   idTdata.innerText = `${subjectSelected}`;
   userNameTdata.innerHTML = `${TypeSelected}`;
   userNameTdata.id = "user_Tdata";
   locationTdata.innerText = `${point}`;
   ageTdata.innerText = `${maxPoint}`;
+  gradeTdata.innerText = `${maxPoint}`;
 
   list.appendChild(idTdata);
   list.appendChild(userNameTdata);
   list.appendChild(locationTdata);
   list.appendChild(ageTdata);
+  list.appendChild(gradeTdata);
   if (gradeTable) {
     gradeTable.appendChild(list);
   }
